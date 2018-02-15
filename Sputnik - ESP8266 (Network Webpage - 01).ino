@@ -1,34 +1,25 @@
 /* 15-2-2018
 
- ESP8266-01
+ Sputnik Spotlight - ESP8266-01
 
- Web page with simple inputs to control Lamp and send to ATmega328P via UART messages like:
+ Web page with simple inputs to control Lamp on 192.168.1.116
+ Sends commands to ATmega328P via UART in format:
 1:80-2:40-3:180-4:200-
 
-meaning: device 1, value 80
-         device 2, value 40
-         ecc.
+1) length1     1st big stepper position, cm
+2) length2     2nd big stepper position, cm
+3) length3     3rd big stepper position, cm
+4) rotationX   4th Attiny, x position (0-359), degrees
+5) rotationY   Atmega,  y position (0-359), degrees
+6) focus       focus microstepper (0-100)
+7) dimmer      dimmer (0-255)  , PWM pin to lamp ground
 
-same command type, only in range 1-4, parsed by each device to get its own specific command
-Commands 5,6,7 are for Atmega328P
-
-1) 90     1st big stepper position, cm
-2) 80     2nd big stepper position, cm
-3) 180    3rd big stepper position, cm
-4) 0      4th Attiny, x position (0-359), degrees
-5) 0      Atmega,  y position (0-359), degrees
-6) 7      focus microstepper (0-100)
-7) 0      dimmer (0-255)  , PWM pin to lamp ground
-
-
-ESP8266-01 ------ Webpage on 192.168.1.116
-ESP8266-01  ----  Atmega328P
-connected via UART standard serial
-rx-tx
-tx-rx
 
 Terminal bash commmand to change position:
-curl -s --max-time 30 --retry 20 --retry-delay 10 --retry-max-time 60 'http://192.168.1.116/change?data1=300&data2=300&data3=0&data4=90&data5=10&data6=10&data7=100' >> /dev/null || echo "Error Connection!"
+
+curl -s 'http://192.168.1.116/saved_position_1 >> /dev/null
+curl -s --max-time 30 --retry 20 --retry-delay 10 --retry-max-time 60 'http://192.168.1.116/change?length1=300&length2=300&length3=0&rotationX=90&rotationY=10&focus=10&dimmer=100' >> /dev/null || echo "Error Connection!"
+
  
 
 
@@ -72,6 +63,7 @@ const char* ssid     = "-------------------------------";
 const char* password = "-------------------------------";
 
 
+
 // Usual settings, change for specific router (e.g. 192.168.0.x)
 IPAddress ip(192,168,1,116);    // Request of static IP: 192.168.1.116
 IPAddress gateway(192,168,1,1);
@@ -111,10 +103,10 @@ void setup()
   server.on("/read", read_sensors);
   server.on("/save", save_position);
   server.on("/stop", manual_stop);
-  server.on("/fixed_change_1", fixed_change_1);
-  server.on("/fixed_change_2", fixed_change_2);
-  server.on("/fixed_change_3", fixed_change_3);
-  server.on("/fixed_change_4", fixed_change_4);
+  server.on("/saved_position_1", saved_position_1);
+  server.on("/saved_position_2", saved_position_2);
+  server.on("/saved_position_3", saved_position_3);
+  server.on("/saved_position_4", saved_position_4);
 
   server.begin();
 
@@ -169,27 +161,29 @@ void webPage()
                 <p> Data transmitted from router to devices by UART \n\
                 <hr>                                   \n\
                 <form action='/change'>                \n\
-                  <p>Length 1 &nbsp;&nbsp;= <input type='text' size='1' name='data1' value='"+String(data[1])+"'> (cm)    \n\
-                  <p>Length 2 &nbsp;&nbsp;= <input type='text' size='1' name='data2' value='"+String(data[2])+"'> (cm)   \n\
-                  <p>Length 3 &nbsp;&nbsp;= <input type='text' size='1' name='data3' value='"+String(data[3])+"'> (cm)    \n\
-                  <p>Rotation X = <input type='text' size='1' name='data4' value='"+String(data[4])+"'> (degrees)    \n\
-                  <p>Rotation Y = <input type='text' size='1' name='data5' value='"+String(data[5])+"'> (degrees)    \n\
-                  <p>Focus &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <input type='text' size='1' name='data6' value='"+String(data[6])+"'> (0-100%)    \n\
-                  <p>Dimmer &nbsp;&nbsp;&nbsp;= <input type='text' size='1' name='data7' value='"+String(data[7])+"'> (0-255)    \n\
+                  <p>Length 1 &nbsp;&nbsp;= <input type='text' size='1' name='length1' value='"+String(data[1])+"'> (cm)    \n\
+                  <p>Length 2 &nbsp;&nbsp;= <input type='text' size='1' name='length2' value='"+String(data[2])+"'> (cm)   \n\
+                  <p>Length 3 &nbsp;&nbsp;= <input type='text' size='1' name='length3' value='"+String(data[3])+"'> (cm)    \n\
+                  <p>Rotation X = <input type='text' size='1' name='rotationX' value='"+String(data[4])+"'> (degrees)    \n\
+                  <p>Rotation Y = <input type='text' size='1' name='rotationY' value='"+String(data[5])+"'> (degrees)    \n\
+                  <p>Focus &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <input type='text' size='1' name='focus' value='"+String(data[6])+"'> (0-100%)    \n\
+                  <p>Dimmer &nbsp;&nbsp;&nbsp;= <input type='text' size='1' name='dimmer' value='"+String(data[7])+"'> (0-255)    \n\
                   <input type='submit' formaction='/change' value='Change'>     \n\
                 </form>                                 \n\
                 <hr>                                    \n\
                 <form>                                  \n\
+                Commands (work in progress):            \n\
                   <input type='submit' formaction='/read' value='Read'>         \n\
                   <input type='submit' formaction='/save' value='Save'>         \n\
                   <input type='submit' formaction='/stop' value='STOP'>         \n\
                 </form>                                \n\
               <hr>                                     \n\
               <form>                                   \n\
-                  <input type='submit' formaction='/fixed_change_1' value='Saved_1'>    \n\
-                  <input type='submit' formaction='/fixed_change_2' value='Saved_2'>    \n\
-                  <input type='submit' formaction='/fixed_change_3' value='Saved_3'>    \n\
-                  <input type='submit' formaction='/fixed_change_4' value='Saved_4'>    \n\
+                  Saved positions:                     \n\
+                  <input type='submit' formaction='/saved_position_1' value='Full'>    \n\
+                  <input type='submit' formaction='/saved_position_2' value='Diffuse'>    \n\
+                  <input type='submit' formaction='/saved_position_3' value='Angle'>    \n\
+                  <input type='submit' formaction='/saved_position_4' value='On the table'>    \n\
               </form>                                  \n\
               <hr>                                     \n\
               </body>                                  \n\
@@ -207,13 +201,13 @@ void webPage()
 void manual_change()
 {
   // Transport data from server (html) to array (C)
-  data[1] = server.arg("data1").toInt();
-  data[2] = server.arg("data2").toInt();
-  data[3] = server.arg("data3").toInt();
-  data[4] = server.arg("data4").toInt();
-  data[5] = server.arg("data5").toInt();
-  data[6] = server.arg("data6").toInt();
-  data[7] = server.arg("data7").toInt();
+  data[1] = server.arg("length1").toInt();
+  data[2] = server.arg("length2").toInt();
+  data[3] = server.arg("length3").toInt();
+  data[4] = server.arg("rotationX").toInt();
+  data[5] = server.arg("rotationY").toInt();
+  data[6] = server.arg("focus").toInt();
+  data[7] = server.arg("dimmer").toInt();
   
   checkSendData(); // Send commands to ATmega328P
   webPage();  // Go back into web front page
@@ -245,7 +239,7 @@ void read_sensors()
   delay(delayRepeat);
   Serial.println(message);
   
-  //Wait for answer
+  //Ask for position
   webPage();
 }
 
@@ -264,59 +258,57 @@ void save_position()
 //---------------------------------
 // Fixed position change
 //---------------------------------
-void fixed_change_1()
+void saved_position_1()    //Full
 {
-// How to store position's title? EEPROM isn't good with characters
-
-  data[1] = 250;
-  data[2] = 125;
-  data[3] = 180;
-  data[4] = 30;
-  data[5] = 60;
-  data[6] = 20;
+  data[1] = 240;
+  data[2] = 180;
+  data[3] = 120;
+  data[4] = 0;
+  data[5] = 270;
+  data[6] = 100;
   data[7] = 254;
   
   checkSendData();  
   webPage();  // Go back into web front page
 }
 
-void fixed_change_2()
+void saved_position_2()    //Diffuse
 {
-  data[1] = 125;
-  data[2] = 320;
-  data[3] = 190;
+  data[1] = 240;
+  data[2] = 180;
+  data[3] = 120;
   data[4] = 0;
-  data[5] = 180;
-  data[6] = 100;
+  data[5] = 90;
+  data[6] = 20;
   data[7] = 150;
   
   checkSendData();  
   webPage();
 }
 
-void fixed_change_3()
+void saved_position_3()   //Angle
 {
-  data[1] = 300;
-  data[2] = 300;
-  data[3] = 400;
-  data[4] = 35;
+  data[1] = 100;
+  data[2] = 350;
+  data[3] = 200;
+  data[4] = 135;
   data[5] = 45;
-  data[6] = 90;
-  data[7] = 40;
+  data[6] = 80;
+  data[7] = 200;
     
   checkSendData();
   webPage();
 }
 
-void fixed_change_4()
+void saved_position_4()    //On the table
 {
-  data[1] = 400;
-  data[2] = 400;
-  data[3] = 400;
+  data[1] = 200;
+  data[2] = 200;
+  data[3] = 200;
   data[4] = 270;
   data[5] = 90;
-  data[6] = 100;
-  data[7] = 10;
+  data[6] = 50;
+  data[7] = 254;
     
   checkSendData();
   webPage();
