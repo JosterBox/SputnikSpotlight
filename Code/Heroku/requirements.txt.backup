@@ -1,0 +1,5 @@
+flask
+flask_ask
+requests
+os
+logging

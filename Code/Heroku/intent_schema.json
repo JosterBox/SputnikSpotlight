@@ -1,39 +1,100 @@
 {
-  "intents": [
-    {
-      "intent": "light",
-      "slots": [
-        {
-          "name": "full",
-          "type": "AMAZON.LITERAL"
-        }
-        {
-          "name": "diffuse",
-          "type": "AMAZON.LITERAL"
-        }
-        {
-          "name": "angle",
-          "type": "AMAZON.LITERAL"
-        }
-        {
-          "name": "table",
-          "type": "AMAZON.LITERAL"
-        }
-      ]
-      "intent": "stop",
-      "slots": [
-        {
-          "name": "stop",
-          "type": "AMAZON.LITERAL"
-        }
-     ]
-      "intent": "help",
-      "slots": [
-        {
-          "name": "help",
-          "type": "AMAZON.LITERAL"
-        }
-     ]
-    }
-  ]
+  "languageModel": {
+    "types": [
+      {
+        "name": "configuration",
+        "values": [
+          {
+            "id": null,
+            "name": {
+              "value": "full",
+              "synonyms": [
+                "full light",
+                "direct",
+                "one"
+              ]
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "diffuse",
+              "synonyms": [
+                "soft",
+                "soft light",
+                "atmosphere",
+                "two"
+              ]
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "angle",
+              "synonyms": [
+                "reading",
+                "stage",
+                "three"
+              ]
+            }
+          },
+          {
+            "id": null,
+            "name": {
+              "value": "table",
+              "synonyms": [
+                "desktop",
+                "on the table",
+                "four"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "intents": [
+      {
+        "name": "AMAZON.CancelIntent",
+        "samples": [
+          "cancel",
+          "nothing"
+        ]
+      },
+      {
+        "name": "AMAZON.HelpIntent",
+        "samples": [
+          "help",
+          "options"
+        ]
+      },
+      {
+        "name": "AMAZON.StopIntent",
+        "samples": [
+          "stop",
+          "stop now"
+        ]
+      },
+      {
+        "name": "light",
+        "samples": [
+          "to light {configuration}",
+          "turn on {configuration}",
+          "set lights {configuration}",
+          "light {configuration}",
+          "number {Numbers}"
+        ],
+        "slots": [
+          {
+            "name": "Numbers",
+            "type": "AMAZON.NUMBER"
+          },
+          {
+            "name": "configuration",
+            "type": "configuration"
+          }
+        ]
+      }
+    ],
+    "invocationName": "sputnik"
+  }
 }
