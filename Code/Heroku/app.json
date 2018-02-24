@@ -1,0 +1,15 @@
+{
+  "name": "Sputnik controller bot",
+  "description": "An intermediary between Alexa+ESP8266",
+  "image": "",
+  "repository": "https://github.com/JosterBox/SputnikSpotlight",
+  "keywords": ["python" ],
+  "addons": [ "heroku-postgresql" ],
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "app.py"
+      }
+    }
+  }
+}
