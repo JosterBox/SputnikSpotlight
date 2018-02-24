@@ -1,0 +1,1 @@
+web: python Sputnik_controller.py -p 100
