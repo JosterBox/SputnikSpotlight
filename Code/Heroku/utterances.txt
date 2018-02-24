@@ -1,0 +1,12 @@
+light {configuration|number}
+turn lights {configuration|number}
+turn on lights {configuration|number}
+number {number}
+set ligths {configuration|number}
+{configuration|number}
+{configuration|number} mode
+stop
+position
+its position
+help
+

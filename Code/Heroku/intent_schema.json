@@ -1,0 +1,39 @@
+{
+  "intents": [
+    {
+      "intent": "light",
+      "slots": [
+        {
+          "name": "full",
+          "type": "AMAZON.LITERAL"
+        }
+        {
+          "name": "diffuse",
+          "type": "AMAZON.LITERAL"
+        }
+        {
+          "name": "angle",
+          "type": "AMAZON.LITERAL"
+        }
+        {
+          "name": "table",
+          "type": "AMAZON.LITERAL"
+        }
+      ]
+      "intent": "stop",
+      "slots": [
+        {
+          "name": "stop",
+          "type": "AMAZON.LITERAL"
+        }
+     ]
+      "intent": "help",
+      "slots": [
+        {
+          "name": "help",
+          "type": "AMAZON.LITERAL"
+        }
+     ]
+    }
+  ]
+}

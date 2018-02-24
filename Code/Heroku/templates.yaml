@@ -1,0 +1,10 @@
+help: Sputnik spotlight is a remote controlled lamp. Can change position, rotate and dimmer.
+
+query: Do you want to know light configuration options?
+
+options: Possible configurations are full light, diffuse light, angle light and light on the table.
+
+changing: Changing configuration { configuration }.
+
+position: Sputnil is in { positionZ } height, { positionX }, { positionY } position. Rotation is { angleX } and { angleY }. Focus is { focus } percent and light dimmer is { dimmer } percent. Actual configuration is { number }{ configuration }.
+

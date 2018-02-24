@@ -1,0 +1,7 @@
+intents:
+  - light:
+      message: AMAZON.LITERAL
+
+utterances:
+  configuration:
+    -  {  }
